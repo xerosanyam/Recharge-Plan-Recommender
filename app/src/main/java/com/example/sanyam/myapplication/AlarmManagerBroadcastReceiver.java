@@ -105,6 +105,7 @@ public class AlarmManagerBroadcastReceiver extends BroadcastReceiver {
             Log.d("Time ", time);
         }
         Log.d("Read :", "Reading complete");
+        db.close();
 
         SharedPreferences.Editor editor = settings.edit();
         editor.putLong("txWifiBytes", txWifiBytes);

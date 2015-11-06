@@ -1,13 +1,17 @@
 package com.example.sanyam.myapplication;
 
 import android.content.Context;
-import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +24,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         AlarmManagerBroadcastReceiver.setAlarm(this);
-
-        //Shared preferences code
-        SharedPreferences settings = getSharedPreferences("MYPREF", 0);
-        int val = settings.getInt("my", 0);
-
-        //Shared preferences code
 
 //        DataUsageDatabaseHandler db=new DataUsageDatabaseHandler(this);
 //        db.deleteRecords();
@@ -46,9 +44,40 @@ public class MainActivity extends AppCompatActivity {
 //        listView.setAdapter(usageAdapter);
         //code for listView Ends here
 
+//        fetchData();
+        fetchJsonData();
+    }
+
+    private void fetchJsonData() {
+        String json = "";
+        DataUsageDatabaseHandler db = new DataUsageDatabaseHandler(this);
+        Cursor cursor = db.getAllData();
+        JSONObject jobj;
+        JSONArray arr = new JSONArray();
         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        Log.e("IMEI", telephonyManager.getDeviceId());
-        fetchData();
+        String imei = telephonyManager.getDeviceId();
+        try {
+            if (cursor.moveToFirst()) {
+                do {
+                    jobj = new JSONObject();
+                    jobj.put("IMEI", imei);
+                    jobj.put("txwifi", cursor.getInt(1));
+                    jobj.put("rxwifi", cursor.getInt(2));
+                    jobj.put("txcell", cursor.getInt(3));
+                    jobj.put("rxcell", cursor.getInt(4));
+                    String a = cursor.getInt(5) + "T" + cursor.getInt(6) + "+05:30";
+                    jobj.put("date", a);
+                    arr.put(jobj);
+                    //jobj.put("IMEI","1234");
+                } while (cursor.moveToNext());
+            }
+            json = arr.toString();
+            Log.e("---------", "--------");
+            Log.e("Value", json);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void fetchData() {

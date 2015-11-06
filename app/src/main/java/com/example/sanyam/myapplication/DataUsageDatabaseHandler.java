@@ -45,7 +45,7 @@ public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS "+ TABLE_DATA);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_DATA);
         onCreate(db);
     }
 
@@ -79,6 +79,14 @@ public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
             }while (cursor.moveToNext());
         }
         return usageList;
+    }
+
+    public Cursor getAllData() {
+        List<DataUsage> usageList = new ArrayList<DataUsage>();
+        String selectQuery = "SELECT * FROM " + TABLE_DATA;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        return cursor;
     }
     public int getRecordsCount(){
         String countQuery="SELECT * FROM " +TABLE_DATA;
