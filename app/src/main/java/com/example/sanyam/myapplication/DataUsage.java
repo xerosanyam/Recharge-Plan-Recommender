@@ -1,7 +1,7 @@
 package com.example.sanyam.myapplication;
 
 /**
- * Created by sanyam on 5/11/15.
+ * Created by sanyam & anisha on 5/11/15.
  */
 public class DataUsage {
     private long txWifiBytes;
@@ -11,7 +11,7 @@ public class DataUsage {
     private String date;
     private String time;
 
-    public DataUsage(){
+    public DataUsage() {
     }
 
     public DataUsage(long txWifiBytes, long rxWifiBytes, long txCellBytes, long rxCellBytes, String date, String time) {

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by sanyam on 5/11/15.
+ * Created by sanyam & anisha on 5/11/15.
  */
 public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
 
@@ -27,7 +27,7 @@ public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
 
 
     public DataUsageDatabaseHandler(Context context) {
-            super(context,DB_NAME,null,DB_VERSION);;
+        super(context, DB_NAME, null, DB_VERSION);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
         db.close();
     }
     public List<DataUsage> getAllUsage(){
-        List<DataUsage> usageList=new ArrayList<DataUsage>();
+        List<DataUsage> usageList = new ArrayList<>();
         String selectQuery="SELECT * FROM " + TABLE_DATA;
         SQLiteDatabase db=this.getWritableDatabase();
         Cursor cursor=db.rawQuery(selectQuery,null);
