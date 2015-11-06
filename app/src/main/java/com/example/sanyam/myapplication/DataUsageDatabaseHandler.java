@@ -49,26 +49,27 @@ public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public void addDataUsage(DataUsage dataUsage){
-        SQLiteDatabase db=this.getWritableDatabase();
-        ContentValues values=new ContentValues();
-        values.put(KEY_TXWIFIBYTES,dataUsage.getTxWifiBytes());
-        values.put(KEY_RXWIFIBYTES,dataUsage.getRxWifiBytes());
-        values.put(KEY_TXCELLBYTES,dataUsage.getTxCellBytes());
-        values.put(KEY_RXCELLBYTES,dataUsage.getRxCellBytes());
-        values.put(KEY_DATE,dataUsage.getDate());
-        values.put(KEY_TIME,dataUsage.getTime());
+    public void addDataUsage(DataUsage dataUsage) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_TXWIFIBYTES, dataUsage.getTxWifiBytes());
+        values.put(KEY_RXWIFIBYTES, dataUsage.getRxWifiBytes());
+        values.put(KEY_TXCELLBYTES, dataUsage.getTxCellBytes());
+        values.put(KEY_RXCELLBYTES, dataUsage.getRxCellBytes());
+        values.put(KEY_DATE, dataUsage.getDate());
+        values.put(KEY_TIME, dataUsage.getTime());
         db.insert(TABLE_DATA, null, values);
         db.close();
     }
-    public List<DataUsage> getAllUsage(){
+
+    public List<DataUsage> getAllUsage() {
         List<DataUsage> usageList = new ArrayList<>();
-        String selectQuery="SELECT * FROM " + TABLE_DATA;
-        SQLiteDatabase db=this.getWritableDatabase();
-        Cursor cursor=db.rawQuery(selectQuery,null);
-        if(cursor.moveToFirst()){
-            do{
-                DataUsage usage=new DataUsage();
+        String selectQuery = "SELECT * FROM " + TABLE_DATA;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                DataUsage usage = new DataUsage();
                 usage.setTxWifiBytes(cursor.getInt(1));
                 usage.setRxWifiBytes(cursor.getInt(2));
                 usage.setTxCellBytes(cursor.getInt(3));
@@ -76,27 +77,29 @@ public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
                 usage.setDate(cursor.getString(5));
                 usage.setTime(cursor.getString(6));
                 usageList.add(usage);
-            }while (cursor.moveToNext());
+            } while (cursor.moveToNext());
         }
         return usageList;
     }
 
     public Cursor getAllData() {
-        List<DataUsage> usageList = new ArrayList<DataUsage>();
+        List<DataUsage> usageList = new ArrayList<>();
         String selectQuery = "SELECT * FROM " + TABLE_DATA;
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
         return cursor;
     }
-    public int getRecordsCount(){
-        String countQuery="SELECT * FROM " +TABLE_DATA;
-        SQLiteDatabase db=this.getReadableDatabase();
-        Cursor cursor=db.rawQuery(countQuery, null);
+
+    public int getRecordsCount() {
+        String countQuery = "SELECT * FROM " + TABLE_DATA;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(countQuery, null);
         cursor.close();
         return cursor.getCount();
     }
-    public void deleteRecords(){
-        SQLiteDatabase db=this.getWritableDatabase();
-        db.delete(TABLE_DATA,null,null);
+
+    public void deleteRecords() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_DATA, null, null);
     }
 }
