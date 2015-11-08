@@ -1,4 +1,4 @@
-# MyApplication
+# DataUsage
 Application to curate Wifi & Cellular Data from an Android Phone
 
 ##To do
