@@ -1,5 +1,6 @@
 package com.example.sanyam.myapplication;
 
+
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -11,20 +12,23 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     ArrayAdapter<String> usageAdapter;
+    ED send;
     private String name;
 
     @Override
@@ -64,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
         JSONArray arr = new JSONArray();
         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         String imei = telephonyManager.getDeviceId();
+
         try {
             if (cursor.moveToFirst()) {
                 do {
@@ -84,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+
         return json;
     }
 
@@ -131,40 +138,40 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected String[] doInBackground(String... params) {
-            Log.e("in back", "bg");
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
 
+
+            InputStream inputStream = null;
+            String result = "";
             try {
 
-                URL url = new URL("http://192.168.43.46:8888/sync_data");
-                Log.e("connecting..", "building connection");
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setReadTimeout(15000);
-                urlConnection.setConnectTimeout(15000);
-                urlConnection.setRequestMethod("POST");
-                urlConnection.setDoInput(true);
-                urlConnection.setDoOutput(true);
+                // 1. create HttpClient
+                HttpClient httpclient = new DefaultHttpClient();
 
+                // 2. make POST request to the given URL
+                HttpPost httpPost = new HttpPost("http://192.168.43.46:8888/sync_data");
 
-                OutputStream outputStream = urlConnection.getOutputStream();
                 String json = fetchJsonData();
-                Log.e("json", json);
-                outputStream.write(json.getBytes("UTF8"));
-                outputStream.flush();
-                outputStream.close();
-                Log.e("connection done", "built connection");
-                int responseCode = urlConnection.getResponseCode();
-                Log.e("response code", String.valueOf(responseCode));
-                Log.e("connection done", "no response ?");
+                String encrypt = ED.encrypt(json, "qazxswedc");
+
+                StringEntity se = new StringEntity(encrypt);
+                //StringEntity se = new StringEntity(json);
+                // 6. set httpPost Entity
+                httpPost.setEntity(se);
+                Log.e("success", "sent");
+                // 7. Set some headers to inform server about the type of the content
+                httpPost.setHeader("Accept", "application/json");
+                httpPost.setHeader("Content-type", "application/json");
+
+                // 8. Execute POST request to the given URL
+                HttpResponse httpResponse = httpclient.execute(httpPost);
+
+                // 9. receive response as inputStream
+                inputStream = httpResponse.getEntity().getContent();
+
+
             } catch (Exception e) {
-                Log.e("LOG_TAG", "Error in getting data ", e);
-                return null;
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
+                Log.d("InputStream", e.getLocalizedMessage());
                 }
-            }
             return null;
         }
     }
