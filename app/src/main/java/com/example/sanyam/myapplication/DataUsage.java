@@ -1,7 +1,7 @@
 package com.example.sanyam.myapplication;
 
 /**
- * Created by sanyam & anisha on 5/11/15.
+ * Created by Sanyam Jain & Anisha Lunawat on 5/11/15.
  */
 public class DataUsage {
     private long txWifiBytes;

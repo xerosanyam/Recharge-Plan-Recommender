@@ -16,7 +16,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Created by Sanyam & Anisha Lunawat on 5/11/15.
+ * Created by Sanyam Jain & Anisha Lunawat on 5/11/15.
  */
 public class AlarmManagerBroadcastReceiver extends BroadcastReceiver {
 
