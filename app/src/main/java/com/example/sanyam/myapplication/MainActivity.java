@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -29,8 +30,10 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     ArrayAdapter<String> usageAdapter;
     ED send;
+    ListView mListView;
+    private List<String> feedList = null;
     private String name;
-
+    private SwipeRefreshLayout mSwipeRefreshLayout = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,9 +58,34 @@ public class MainActivity extends AppCompatActivity {
 
 //        listView.setAdapter(usageAdapter);
         //code for listView Ends here
-
-        fetchData();
+        mListView = (ListView) findViewById(R.id.listView_usage);
+        List<String> usageArray = fetchData();
+        ArrayAdapter<String> usageAdapter = new ArrayAdapter<>(
+                getApplicationContext(),
+                R.layout.listitemusage,
+                R.id.listView_textView,
+                usageArray
+        );
+        ListView listView = (ListView) findViewById(R.id.listView_usage);
+        listView.setAdapter(usageAdapter);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                //Refreshing data on server
+                new DownloadFilesTask().execute();
+            }
+        });
 //        fetchJsonData();
+    }
+
+    private void updateList() {
+        ArrayAdapter mAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_list_item_1, feedList);
+        mListView.setAdapter(mAdapter);
+
+        if (mSwipeRefreshLayout.isRefreshing()) {
+            mSwipeRefreshLayout.setRefreshing(false);
+        }
     }
 
     private String fetchJsonData() {
@@ -94,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
         return json;
     }
 
-    private void fetchData() {
+    private List<String> fetchData() {
         //code for listView fetching data from Sql
         DataUsageDatabaseHandler db = new DataUsageDatabaseHandler(this);
         Log.e("Reading from DB :", "Reading all usage");
@@ -111,15 +139,16 @@ public class MainActivity extends AppCompatActivity {
             usageArray.add(newtxWifiBytes + " " + newrxWifiBytes + " " + newtxCellBytes + " " + newrxCellBytes + " " + date + " " + time);
         }
         Collections.reverse(usageArray);
-        ArrayAdapter<String> usageAdapter = new ArrayAdapter<>(
-                getApplicationContext(),
-                R.layout.listitemusage,
-                R.id.listView_textView,
-                usageArray
-        );
-        ListView listView = (ListView) findViewById(R.id.listView_usage);
-        listView.setAdapter(usageAdapter);
-        Log.d("Read :", "Reading complete");
+        return usageArray;
+//        ArrayAdapter<String> usageAdapter = new ArrayAdapter<>(
+//                getApplicationContext(),
+//                R.layout.listitemusage,
+//                R.id.listView_textView,
+//                usageArray
+//        );
+//        ListView listView = (ListView) findViewById(R.id.listView_usage);
+//        listView.setAdapter(usageAdapter);
+        //     Log.d("Read :", "Reading complete");
         //code for listView fetching data from Sql ends here
     }
 
@@ -132,6 +161,26 @@ public class MainActivity extends AppCompatActivity {
         sendUsageTask ut = new sendUsageTask();
         ut.execute();
         Log.e("afterSubmit", "let's see what happens");
+    }
+
+    private class DownloadFilesTask extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            updateList();
+
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+            // getting JSON string from URL
+            feedList = fetchData();
+            return null;
+        }
     }
 
     public class sendUsageTask extends AsyncTask<String, Void, String[]> {
