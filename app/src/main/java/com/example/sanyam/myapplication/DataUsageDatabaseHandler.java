@@ -6,7 +6,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -14,7 +17,7 @@ import java.util.List;
  */
 public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
 
-    public static final int DB_VERSION = 1;                             //DB Version
+    public static final int DB_VERSION = 2;                             //DB Version
     public static final String DB_NAME = "UsageDB";                     //DB Name
     public static final String TABLE_DATA = "data";                     //Table Name
     public static final String KEY_ID = "id";                           //Column Name
@@ -23,13 +26,23 @@ public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
     public static final String KEY_TXCELLBYTES = "txCellBytes";         //Column Name
     public static final String KEY_RXCELLBYTES = "rxCellBytes";         //Column Name
     public static final String KEY_DATE = "date";                       //Column Name
-    public static final String KEY_TIME = "time";                       //Column Name
-
 
     public DataUsageDatabaseHandler(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
     }
 
+    public static Date toDate(String str) {
+        SimpleDateFormat s = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+        Date d = null;
+        try {
+            d = s.parse(str);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return d;
+    }
+
+    //create DB
     @Override
     public void onCreate(SQLiteDatabase db) {
         String createDataTableQuery = "CREATE TABLE " + TABLE_DATA + "(" +
@@ -38,8 +51,7 @@ public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
                 KEY_RXWIFIBYTES + " INTEGER, " +
                 KEY_TXCELLBYTES + " INTEGER, " +
                 KEY_RXCELLBYTES + " INTEGER, " +
-                KEY_DATE + " TEXT, " +
-                KEY_TIME + " TEXT " + ")";
+                KEY_DATE + " TEXT)";
         db.execSQL(createDataTableQuery);
     }
 
@@ -56,13 +68,12 @@ public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_RXWIFIBYTES, dataUsage.getRxWifiBytes());
         values.put(KEY_TXCELLBYTES, dataUsage.getTxCellBytes());
         values.put(KEY_RXCELLBYTES, dataUsage.getRxCellBytes());
-        values.put(KEY_DATE, dataUsage.getDate());
-        values.put(KEY_TIME, dataUsage.getTime());
+        values.put(KEY_DATE, String.valueOf(dataUsage.getDate()));
         db.insert(TABLE_DATA, null, values);
         db.close();
     }
 
-    public List<DataUsage> getAllUsage() {
+    public List<DataUsage> getUsageList() {
         List<DataUsage> usageList = new ArrayList<>();
         String selectQuery = "SELECT * FROM " + TABLE_DATA;
         SQLiteDatabase db = this.getWritableDatabase();
@@ -74,16 +85,14 @@ public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
                 usage.setRxWifiBytes(cursor.getInt(2));
                 usage.setTxCellBytes(cursor.getInt(3));
                 usage.setRxCellBytes(cursor.getInt(4));
-                usage.setDate(cursor.getString(5));
-                usage.setTime(cursor.getString(6));
+                usage.setDate(toDate(cursor.getString(5)));
                 usageList.add(usage);
             } while (cursor.moveToNext());
         }
         return usageList;
     }
 
-    public Cursor getAllData() {
-        List<DataUsage> usageList = new ArrayList<>();
+    public Cursor getDataCursor() {
         String selectQuery = "SELECT * FROM " + TABLE_DATA;
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);

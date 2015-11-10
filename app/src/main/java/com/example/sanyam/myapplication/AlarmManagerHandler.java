@@ -8,16 +8,14 @@ import android.net.TrafficStats;
 import android.os.PowerManager;
 import android.util.Log;
 
-import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Created by Sanyam Jain & Anisha Lunawat on 8/11/15.
  */
+//handle async request on demand (basically does some work on new thread)
 public class AlarmManagerHandler extends IntentService {
-
     static long txWifiBytes, rxWifiBytes, txCellBytes, rxCellBytes;
     static Context context;
     long newtxWifiBytes, newrxWifiBytes, newtxCellBytes, newrxCellBytes;
@@ -29,25 +27,24 @@ public class AlarmManagerHandler extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Log.d(getClass().getSimpleName(), "I ran!");
+        Log.d(getClass().getSimpleName(), "Alarm went off &  I ran!");
         context = getApplicationContext();
-        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Your_Tag");
-        //Acquire the lock
-        wl.acquire();
 
-        //Shared PRefrences code; RETREIVING
+        //Retrieving Shared preferences
         SharedPreferences settings = context.getSharedPreferences("MYPREF", 0);
         txWifiBytes = settings.getLong("txWifiBytes", 0);
         rxWifiBytes = settings.getLong("rxWifiBytes", 0);
         txCellBytes = settings.getLong("txCellBytes", 0);
         rxCellBytes = settings.getLong("rxCellBytes", 0);
-        //Shared PRefrences code
-//        Log.e("ny tx wifi:", String.valueOf(txWifiBytes));
-//        Log.e("ny tx wifi:", String.valueOf(rxWifiBytes));
-//        Log.e("ny tx wifi:", String.valueOf(txCellBytes));
-//        Log.e("ny tx wifi:", String.valueOf(rxCellBytes));
 
+        //gives control of power state of device. affects battery.
+        //Do not acquire WakeLock unless you really need them, use the minimum levels
+        //possible, and be sure to release them as soon as possible.
+        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "writing data to sql");
+
+        //Acquire the lock
+        wl.acquire();
 
         newtxWifiBytes = (TrafficStats.getTotalTxBytes() - TrafficStats.getMobileTxBytes()) - txWifiBytes;
         txWifiBytes = TrafficStats.getTotalTxBytes() - TrafficStats.getMobileTxBytes();
@@ -65,7 +62,7 @@ public class AlarmManagerHandler extends IntentService {
         rxCellBytes = (TrafficStats.getMobileRxBytes());
 //        Log.e("my rx cell:", String.valueOf(rxCellBytes));
 
-        Format formatter = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
         Date DATE = new Date();
         date = formatter.format(DATE);
         formatter = new SimpleDateFormat("HH:mm:ss");
@@ -78,27 +75,9 @@ public class AlarmManagerHandler extends IntentService {
         Log.d("time", time);
         DataUsageDatabaseHandler db = new DataUsageDatabaseHandler(context);
         Log.d("Insert: ", "Inserting ..");
-        db.addDataUsage(new DataUsage(newtxWifiBytes, newrxWifiBytes, newtxCellBytes, newrxCellBytes, date, time));
+        db.addDataUsage(new DataUsage(newtxWifiBytes, newrxWifiBytes, newtxCellBytes, newrxCellBytes, DataUsageDatabaseHandler.toDate(date)));
         Log.d("Inserted: ", "Inserting complete..");
 
-        Log.d("Reading :", "Reading all usage");
-        List<DataUsage> usages;
-        usages = db.getAllUsage();
-        for (DataUsage du : usages) {
-            long newtxWifiBytes = du.getTxWifiBytes();
-            long newrxWifiBytes = du.getRxWifiBytes();
-            long newtxCellBytes = du.getTxCellBytes();
-            long newrxCellBytes = du.getRxCellBytes();
-            String date = du.getDate();
-            String time = du.getTime();
-            Log.d("txWifiBytes ", String.valueOf(newtxWifiBytes));
-            Log.d("rxWifiBytes ", String.valueOf(newrxWifiBytes));
-            Log.d("txCellBytes ", String.valueOf(newtxCellBytes));
-            Log.d("rxCellBytes ", String.valueOf(newrxCellBytes));
-            Log.d("Date ", date);
-            Log.d("Time ", time);
-        }
-        Log.d("Read :", "Reading complete");
         db.close();
 
         SharedPreferences.Editor editor = settings.edit();
