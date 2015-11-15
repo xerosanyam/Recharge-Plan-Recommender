@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
 
-    public static final int DB_VERSION = 2;                             //DB Version
+    public static final int DB_VERSION = 8;                             //DB Version
     public static final String DB_NAME = "UsageDB";                     //DB Name
     public static final String TABLE_DATA = "data";                     //Table Name
     public static final String KEY_ID = "id";                           //Column Name
@@ -31,7 +31,21 @@ public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
         super(context, DB_NAME, null, DB_VERSION);
     }
 
-    public static Date toDate(String str) {
+    public static String toDate(String str) {
+        SimpleDateFormat s = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+        Date d;
+        String date = null;
+        try {
+            d = s.parse(str);
+            date = formatter.format(d);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return date;
+    }
+
+    public static Date strToDate(String str) {
         SimpleDateFormat s = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
         Date d = null;
         try {
@@ -85,7 +99,7 @@ public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
                 usage.setRxWifiBytes(cursor.getInt(2));
                 usage.setTxCellBytes(cursor.getInt(3));
                 usage.setRxCellBytes(cursor.getInt(4));
-                usage.setDate(toDate(cursor.getString(5)));
+                usage.setDate(strToDate(cursor.getString(5)));
                 usageList.add(usage);
             } while (cursor.moveToNext());
         }

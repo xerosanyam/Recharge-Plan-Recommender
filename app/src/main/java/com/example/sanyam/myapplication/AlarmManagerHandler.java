@@ -37,6 +37,10 @@ public class AlarmManagerHandler extends IntentService {
         txCellBytes = settings.getLong("txCellBytes", 0);
         rxCellBytes = settings.getLong("rxCellBytes", 0);
 
+        if (txWifiBytes < 0) txWifiBytes = 0;
+        if (rxWifiBytes < 0) rxWifiBytes = 0;
+        if (txCellBytes < 0) txCellBytes = 0;
+        if (rxCellBytes < 0) rxCellBytes = 0;
         //gives control of power state of device. affects battery.
         //Do not acquire WakeLock unless you really need them, use the minimum levels
         //possible, and be sure to release them as soon as possible.
@@ -62,20 +66,17 @@ public class AlarmManagerHandler extends IntentService {
         rxCellBytes = (TrafficStats.getMobileRxBytes());
 //        Log.e("my rx cell:", String.valueOf(rxCellBytes));
 
-        SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         Date DATE = new Date();
         date = formatter.format(DATE);
-        formatter = new SimpleDateFormat("HH:mm:ss");
-        time = formatter.format(DATE);
         Log.d("txWifiBytes", String.valueOf(newtxWifiBytes));
         Log.d("rxWifiBytes", String.valueOf(newrxWifiBytes));
         Log.d("txCellBytes", String.valueOf(newtxCellBytes));
         Log.d("rxCellBytes", String.valueOf(newrxCellBytes));
         Log.d("date", date);
-        Log.d("time", time);
         DataUsageDatabaseHandler db = new DataUsageDatabaseHandler(context);
         Log.d("Insert: ", "Inserting ..");
-        db.addDataUsage(new DataUsage(newtxWifiBytes, newrxWifiBytes, newtxCellBytes, newrxCellBytes, DataUsageDatabaseHandler.toDate(date)));
+        db.addDataUsage(new DataUsage(newtxWifiBytes, newrxWifiBytes, newtxCellBytes, newrxCellBytes, DATE));
         Log.d("Inserted: ", "Inserting complete..");
 
         db.close();
