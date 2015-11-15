@@ -2,6 +2,7 @@ package com.example.sanyam.myapplication;
 
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,74 +14,57 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    ArrayAdapter<String> usageAdapter;
-    ED send;
+    ED send = new ED();
     ListView mListView;
     private List<String> feedList = null;
-    private String name;
     private SwipeRefreshLayout mSwipeRefreshLayout = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         AlarmManagerBroadcastReceiver.setAlarm(this);
 
-//        DataUsageDatabaseHandler db=new DataUsageDatabaseHandler(this);
-//        db.deleteRecords();
-
-        //Code for listView
-//        String[] fakeUsageArray={"Sanyam","Anisha","Abhinay","Ankit"};      //Fake data
-//        List<String> dayUsage=new ArrayList<String>(
-//                Arrays.asList(fakeUsageArray)
-//        );
-
-//        ArrayAdapter<String> usageAdapter=new ArrayAdapter<String>(
-//                getApplicationContext(),
-//                R.layout.listitemusage,
-//                R.id.listView_textView,
-//                dayUsage
-//        );
-
-//        listView.setAdapter(usageAdapter);
-        //code for listView Ends here
-        mListView = (ListView) findViewById(R.id.listView_usage);
-        List<String> usageArray = fetchData();
+        //populating listview on first run
+        feedList = fetchData();
         ArrayAdapter<String> usageAdapter = new ArrayAdapter<>(
                 getApplicationContext(),
                 R.layout.listitemusage,
                 R.id.listView_textView,
-                usageArray
+                feedList
         );
-        ListView listView = (ListView) findViewById(R.id.listView_usage);
-        listView.setAdapter(usageAdapter);
+        mListView = (ListView) findViewById(R.id.listView_usage);
+        mListView.setAdapter(usageAdapter);
+
+        //setting up refresh layout
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                //Refreshing data on server
-                new DownloadFilesTask().execute();
+                new DownloadFilesTask().execute();          //creates thread to get data from sql & populate listView
             }
         });
-//        fetchJsonData();
     }
 
+    //puts value in listView for display
     private void updateList() {
-        ArrayAdapter mAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_list_item_1, feedList);
+        ArrayAdapter mAdapter = new ArrayAdapter(MainActivity.this, R.layout.listitemusage, feedList);
         mListView.setAdapter(mAdapter);
 
         if (mSwipeRefreshLayout.isRefreshing()) {
@@ -88,83 +72,114 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private String fetchJsonData() {
-        String json = "";
-        DataUsageDatabaseHandler db = new DataUsageDatabaseHandler(this);
-        Cursor cursor = db.getAllData();
-        JSONObject jobj;
-        JSONArray arr = new JSONArray();
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        String imei = telephonyManager.getDeviceId();
-
-        try {
-            if (cursor.moveToFirst()) {
-                do {
-                    jobj = new JSONObject();
-                    jobj.put("IMEI", imei);
-                    jobj.put("txwifi", cursor.getInt(1));
-                    jobj.put("rxwifi", cursor.getInt(2));
-                    jobj.put("txcell", cursor.getInt(3));
-                    jobj.put("rxcell", cursor.getInt(4));
-                    String a = cursor.getString(5) + "T" + cursor.getString(6) + "+05:30";
-                    jobj.put("date", a);
-                    arr.put(jobj);
-                    //jobj.put("IMEI","1234");
-                } while (cursor.moveToNext());
-            }
-            json = arr.toString();
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-
-        return json;
-    }
-
+    //method for fetching data from sql in list format
     private List<String> fetchData() {
-        //code for listView fetching data from Sql
         DataUsageDatabaseHandler db = new DataUsageDatabaseHandler(this);
         Log.e("Reading from DB :", "Reading all usage");
-        List<DataUsage> usages;
-        usages = db.getAllUsage();
+        List<DataUsage> usages = db.getUsageList();
+
+        //Put fetched data from sql in a list
         List<String> usageArray = new ArrayList<>();
         for (DataUsage du : usages) {
             long newtxWifiBytes = du.getTxWifiBytes();
             long newrxWifiBytes = du.getRxWifiBytes();
             long newtxCellBytes = du.getTxCellBytes();
             long newrxCellBytes = du.getRxCellBytes();
-            String date = du.getDate();
-            String time = du.getTime();
-            usageArray.add(newtxWifiBytes + " " + newrxWifiBytes + " " + newtxCellBytes + " " + newrxCellBytes + " " + date + " " + time);
+            Date date = du.getDate();
+            usageArray.add(newtxWifiBytes + " " + newrxWifiBytes + " " + newtxCellBytes + " " + newrxCellBytes + " " + date);
         }
         Collections.reverse(usageArray);
         return usageArray;
-//        ArrayAdapter<String> usageAdapter = new ArrayAdapter<>(
-//                getApplicationContext(),
-//                R.layout.listitemusage,
-//                R.id.listView_textView,
-//                usageArray
-//        );
-//        ListView listView = (ListView) findViewById(R.id.listView_usage);
-//        listView.setAdapter(usageAdapter);
-        //     Log.d("Read :", "Reading complete");
-        //code for listView fetching data from Sql ends here
     }
 
+    //method for fetching data from server in json format starting from initial Id
+    private String[] fetchJsonData(long initialId) {
+        String json[] = new String[2];
+
+        DataUsageDatabaseHandler db = new DataUsageDatabaseHandler(this);
+        Cursor cursor = db.getDataCursor();
+        Log.e("Pos of cursor:", String.valueOf((int) initialId));
+        if (cursor.getCount() <= (int) initialId) {
+            Log.e("Pos of cursor <= initId", String.valueOf(cursor.getCount()));
+            return null;
+        }
+
+        JSONObject mainObj = new JSONObject();
+
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        String imei = telephonyManager.getDeviceId();
+
+        try {
+            JSONObject data;
+            JSONArray dataArray = new JSONArray();
+
+            cursor.moveToPosition((int) initialId);
+
+            mainObj.put("id", cursor.getLong(0));
+            mainObj.put("IMEI", imei);
+            do {
+                data = new JSONObject();
+                Log.e("id in SQL", String.valueOf(cursor.getLong(0)));
+                Log.e("txwifi in SQL", String.valueOf(cursor.getLong(1)));
+                Log.e("rxwifi in SQL", String.valueOf(cursor.getLong(2)));
+                Log.e("txCell in SQL", String.valueOf(cursor.getLong(3)));
+                Log.e("rxCell in SQL", String.valueOf(cursor.getLong(4)));
+                data.put("txwifi", cursor.getLong(1));
+                data.put("rxwifi", cursor.getLong(2));
+                data.put("txcell", cursor.getLong(3));
+                data.put("rxcell", cursor.getLong(4));
+                data.put("date", DataUsageDatabaseHandler.toDate(cursor.getString(5)));
+                dataArray.put(data);
+//                    data.remove("txwifi");data.remove("rxwifi");data.remove("txcell");data.remove("rxcell");data.remove("date");
+            } while (cursor.moveToNext());
+            mainObj.put("data", dataArray);
+            json[0] = mainObj.toString();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.e("json data", json[0]);
+        cursor.moveToLast();
+        json[1] = String.valueOf(cursor.getInt(0));
+        return json;
+    }
+
+    //method for deleting records from sql 'if required'
+    public void deleteRecords() {
+        DataUsageDatabaseHandler db = new DataUsageDatabaseHandler(this);
+        db.deleteRecords();
+    }
+
+    //this works on button press
     public void refreshList(View view) {
-        fetchData();
+//        new DownloadFilesTask().execute();
+        getApplicationContext().getSharedPreferences("MYPREF", 0).edit().clear().commit();
     }
 
+    //this works on button press
     public void onSubmit(View view) {
-        Log.e("beforeSubmit", "let's see what happens");
-        sendUsageTask ut = new sendUsageTask();
-        ut.execute();
-        Log.e("afterSubmit", "let's see what happens");
+        new sendUsageTask().execute();
+//        printToLog();
     }
 
-    private class DownloadFilesTask extends AsyncTask<String, Void, Void> {
+    //to print long json to log
+    private void printToLog() {
+        String[] json;
+        json = fetchJsonData(1);
+        if (json == null) {
+            Log.e("No entry made", "sqlite empty");
+        } else {
+            int length = json[0].length();
+            for (int i = 0; i < length; i += 1024) {
+                if (i + 1024 < length)
+                    Log.d("JSON OUTPUT", json[0].substring(i, i + 1024));
+                else
+                    Log.d("JSON OUTPUT", json[0].substring(i, length));
+            }
+        }
+    }
 
+    //thread for getting data from sql & populating listview
+    private class DownloadFilesTask extends AsyncTask<String, Void, Void> {
         @Override
         protected void onProgressUpdate(Void... values) {
         }
@@ -172,55 +187,68 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void result) {
             updateList();
-
         }
 
         @Override
         protected Void doInBackground(String... params) {
-            // getting JSON string from URL
             feedList = fetchData();
             return null;
         }
     }
 
+    //thread for sending data to server
     public class sendUsageTask extends AsyncTask<String, Void, String[]> {
-
         @Override
         protected String[] doInBackground(String... params) {
+            Log.e("Sending data to server", "sending");
+            SharedPreferences settings = getSharedPreferences("MYPREF", 0);
+            SharedPreferences.Editor editor = settings.edit();
 
+            //clear shared preferences
+            long initial = settings.getLong("lastId", 0);
+            Log.e("last id is: ", String.valueOf(initial));
+            String[] json = fetchJsonData(initial);
+            if (json == null) {
+                Log.e("sendUsagetask:", "sqlite empty");
+            } else {
+                Log.e("Date got from sql is: ", json[0]);
+                URL url;
+                String response;
+                try {
+                    url = new URL("http://192.168.43.46:8888/sync_data");
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setReadTimeout(15000);
+                    conn.setConnectTimeout(15000);
+                    conn.setRequestMethod("POST");
+                    conn.setDoOutput(true);
+                    conn.setDoInput(true);
+                    OutputStream outputStream = conn.getOutputStream();
+                    String encrypt = ED.encrypt(json[0], "qazxswedc");
+                    outputStream.write(encrypt.getBytes("UTF-8"));
+                    Log.e("Sent data to server", "sent");
+                    outputStream.flush();
+                    outputStream.close();
+                    Log.e("connection closed", "closed by client");
 
-            InputStream inputStream = null;
-            String result = "";
-            try {
-
-                // 1. create HttpClient
-                HttpClient httpclient = new DefaultHttpClient();
-
-                // 2. make POST request to the given URL
-                HttpPost httpPost = new HttpPost("http://192.168.43.46:8888/sync_data");
-
-                String json = fetchJsonData();
-                String encrypt = ED.encrypt(json, "qazxswedc");
-
-                StringEntity se = new StringEntity(encrypt);
-                //StringEntity se = new StringEntity(json);
-                // 6. set httpPost Entity
-                httpPost.setEntity(se);
-                Log.e("success", "sent");
-                // 7. Set some headers to inform server about the type of the content
-                httpPost.setHeader("Accept", "application/json");
-                httpPost.setHeader("Content-type", "application/json");
-
-                // 8. Execute POST request to the given URL
-                HttpResponse httpResponse = httpclient.execute(httpPost);
-
-                // 9. receive response as inputStream
-                inputStream = httpResponse.getEntity().getContent();
-
-
-            } catch (Exception e) {
-                Log.d("InputStream", e.getLocalizedMessage());
+                    InputStream in = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+                    Log.e("Response from server", result.toString());
+                    int responseCode = conn.getResponseCode();
+                    if (responseCode == 200) {
+                        editor.putLong("lastId", Long.parseLong(result.toString()));
+                        Log.e("Cursor pos by server:", result.toString());
+                        editor.commit();
+                    }
+                    Log.e("response code", String.valueOf(responseCode));
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+            }
             return null;
         }
     }
