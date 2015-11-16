@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
 
-    public static final int DB_VERSION = 8;                             //DB Version
+    public static final int DB_VERSION = 13;                             //DB Version
     public static final String DB_NAME = "UsageDB";                     //DB Name
     public static final String TABLE_DATA = "data";                     //Table Name
     public static final String KEY_ID = "id";                           //Column Name

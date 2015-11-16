@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
                 URL url;
                 String response;
                 try {
-                    url = new URL("http://192.168.43.46:8888/sync_data");
+                    url = new URL("http://192.168.14.125:8888/sync_data");
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setReadTimeout(15000);
                     conn.setConnectTimeout(15000);
@@ -225,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
                     OutputStream outputStream = conn.getOutputStream();
                     String encrypt = ED.encrypt(json[0], "qazxswedc");
                     outputStream.write(encrypt.getBytes("UTF-8"));
+                    outputStream.write(json[0].getBytes("UTF-8"));
                     Log.e("Sent data to server", "sent");
                     outputStream.flush();
                     outputStream.close();

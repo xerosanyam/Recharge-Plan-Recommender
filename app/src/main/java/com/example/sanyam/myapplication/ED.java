@@ -35,8 +35,8 @@ public class ED {
         Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
         cipher.init(Cipher.ENCRYPT_MODE, skc);
         byte[] cipherText = new byte[cipher.getOutputSize(input.length)];
-//        int ctLength = cipher.update(input, 0, input.length, cipherText, 0);
-//        ctLength += cipher.doFinal(cipherText, ctLength);
+        int ctLength = cipher.update(input, 0, input.length, cipherText, 0);
+        ctLength += cipher.doFinal(cipherText, ctLength);
 
         return parseByte2HexStr(cipherText);
     }
