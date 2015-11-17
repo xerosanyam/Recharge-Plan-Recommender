@@ -131,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
 
             mainObj.put("id", cursor.getLong(0));
             mainObj.put("IMEI", imei);
+            mainObj.put("number", my_num);
+            mainObj.put("operator", my_operator);
             do {
                 data = new JSONObject();
                 Log.e("id in SQL", String.valueOf(cursor.getLong(0)));
