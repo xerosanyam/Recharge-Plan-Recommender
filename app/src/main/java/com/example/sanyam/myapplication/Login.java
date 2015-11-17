@@ -39,9 +39,9 @@ public class Login extends Activity implements View.OnClickListener, TextWatcher
         e_my_num = (EditText) findViewById(R.id.my_num);
         e_my_num.addTextChangedListener(this);
         Log.e("success", "oncreate");
-
+        //  ActionBar ab =getSupportActionBar(); ab.setLogo(R.drawable.ic_launcher);
         sharedPref = getSharedPreferences("data", MODE_PRIVATE);
-        number = 0;// sharedPref.getInt("isLogged", 0);
+        number = sharedPref.getInt("isLogged", 0);
         Log.e("logoutinlogin", String.valueOf(MainActivity.logout));
         if (MainActivity.logout == 1) {
             MainActivity.logout = 0;
