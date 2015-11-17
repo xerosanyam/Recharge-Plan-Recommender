@@ -2,6 +2,7 @@ package com.example.sanyam.myapplication;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -12,6 +13,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 
 import org.json.JSONArray;
@@ -30,8 +32,15 @@ import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    public static final String MY_PREFS = "MyPrefs";
+    public static int logout = 0;
     ED send = new ED();
     ListView mListView;
+    String my_num, my_operator;
+    SharedPreferences sharedPref;
+    SharedPreferences.Editor editor1;
+    Intent i = null;
+    Button btnLogout;
     private List<String> feedList = null;
     private SwipeRefreshLayout mSwipeRefreshLayout = null;
 
@@ -40,7 +49,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         AlarmManagerBroadcastReceiver.setAlarm(this);
-
+        Bundle b = getIntent().getExtras();
+        sharedPref = getSharedPreferences(MY_PREFS, MODE_PRIVATE);
+        my_num = b.getString("my_num");
+        //period=b.getInt("period");
+        my_operator = b.getString("my_operator");
+        btnLogout = (Button) findViewById(R.id.btnLogout);
         //populating listview on first run
         feedList = fetchData();
         ArrayAdapter<String> usageAdapter = new ArrayAdapter<>(
@@ -117,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
 
             mainObj.put("id", cursor.getLong(0));
             mainObj.put("IMEI", imei);
+            mainObj.put("number", my_num);
+            mainObj.put("operator", my_operator);
             do {
                 data = new JSONObject();
                 Log.e("id in SQL", String.valueOf(cursor.getLong(0)));
@@ -159,6 +175,35 @@ public class MainActivity extends AppCompatActivity {
     public void onSubmit(View view) {
         new sendUsageTask().execute();
 //        printToLog();
+    }
+
+
+    public void onLogout(View view) {
+        logout = 1;
+        Log.e("logout", String.valueOf(logout));
+        SharedPreferences settings = getSharedPreferences(Login.MY_PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.clear();
+        editor.commit();
+        Log.e("logout", "logout1");
+        setLoginState(0);
+        editor1 = getSharedPreferences(MY_PREFS, MODE_PRIVATE).edit();
+        editor1.remove("plans");
+        editor1.commit();
+        Log.e("logout", "logout2");
+        // Log.d(TAG, "Now log out and start the activity login");
+        i = new Intent(MainActivity.this, Login.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(i);
+        finish();
+    }
+
+    private void setLoginState(int status) {
+        SharedPreferences sp = getSharedPreferences("data",
+                MODE_PRIVATE);
+        SharedPreferences.Editor ed = sp.edit();
+        ed.putInt("isLogged", status);
+        ed.commit();
     }
 
     //to print long json to log
