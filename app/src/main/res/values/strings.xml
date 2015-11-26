@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">Data Usage</string>
-    <string name="phone">PHONE</string>
+    <string name="phone">Mobile Number</string>
     <string name="login">LOGIN</string>
+    <string name="latitude_label">Latitude</string>
+    <string name="longitude_label">Longitude</string>
+    <string name="no_location_detected">No Location</string>
 </resources>

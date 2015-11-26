@@ -1,9 +1,10 @@
 package com.example.sanyam.myapplication;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -15,14 +16,21 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+
 import java.sql.SQLException;
 
 /**
  * Created by anisha on 16/11/15.
  */
-public class Login extends Activity implements View.OnClickListener, TextWatcher {
+public class Login extends AppCompatActivity implements
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, View.OnClickListener, TextWatcher {
     public static final String MY_PREFS_NAME = "MyPrefsFile";
     public String my_num;
+    protected GoogleApiClient mGoogleApiClient;
+    protected Location mLastLocation;
     Button login;
     EditText e_my_num;
     String[] operators;
@@ -30,7 +38,7 @@ public class Login extends Activity implements View.OnClickListener, TextWatcher
     SharedPreferences sharedPref;
     Intent in;
     int number, period;
-    private String my_circle = null, my_operator = null;
+    private String my_operator = null;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,8 +46,10 @@ public class Login extends Activity implements View.OnClickListener, TextWatcher
         db = new MySQLiteHelper(this);
         e_my_num = (EditText) findViewById(R.id.my_num);
         e_my_num.addTextChangedListener(this);
+
+
+        buildGoogleApiClient();
         Log.e("success", "oncreate");
-        //  ActionBar ab =getSupportActionBar(); ab.setLogo(R.drawable.ic_launcher);
         sharedPref = getSharedPreferences("data", MODE_PRIVATE);
         number = sharedPref.getInt("isLogged", 0);
         Log.e("logoutinlogin", String.valueOf(MainActivity.logout));
@@ -51,12 +61,7 @@ public class Login extends Activity implements View.OnClickListener, TextWatcher
             Log.e("logoutinloop", String.valueOf(number));
         }
         Log.e("logoutoutloop", String.valueOf(number));
-//        if(number == 0) {
-//            Log.e("success","set shared preference");
-//            //Open the login activity and set this so that next it value is 1 then this conditin will be false.
-//            SharedPreferences.Editor prefEditor = sharedPref.edit();
-//            prefEditor.putInt("isLogged",1);
-//            prefEditor.commit();
+
         try {
             Log.e("in", "Operator list");
             Spinner dropdown = (Spinner) findViewById(R.id.operator_list);
@@ -78,9 +83,7 @@ public class Login extends Activity implements View.OnClickListener, TextWatcher
 
             try {
                 period = 0;
-                my_circle = db.eval(my_number, "Circle");
                 my_operator = db.eval(my_number, "Operator");
-                Log.e("Circle", my_circle);
                 Log.e("Operator", my_operator);
                 Log.e("period", String.valueOf(period));
                 in.putExtra("my_num", my_number);
@@ -100,6 +103,52 @@ public class Login extends Activity implements View.OnClickListener, TextWatcher
 
         login.setOnClickListener(this);
 
+
+    }
+
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+    }
+
+    @Override
+    public void onConnected(Bundle connectionHint) {
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        if (mLastLocation != null) {
+            Log.e("Latitude", String.valueOf(mLastLocation.getLatitude()));
+            Log.e("Latitude", String.valueOf(mLastLocation.getLongitude()));
+        } else {
+            Toast.makeText(this, R.string.no_location_detected, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult result) {
+        Log.i("", "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
+    }
+
+
+    @Override
+    public void onConnectionSuspended(int cause) {
+        Log.i("", "Connection suspended");
+        mGoogleApiClient.connect();
     }
 
     @Override
@@ -132,12 +181,11 @@ public class Login extends Activity implements View.OnClickListener, TextWatcher
             prefEditor.commit();
         } else {
             try {
-                my_circle = db.eval(my_num, "Circle");
                 my_operator = db.eval(my_num, "Operator");
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            if (my_circle == null || my_operator == null) {
+            if (my_operator == null) {
                 Toast.makeText(getBaseContext(), "Please enter a valid number!!", Toast.LENGTH_LONG).show();
                 SharedPreferences.Editor prefEditor = sharedPref.edit();
                 prefEditor.putInt("isLogged", 0);
@@ -170,7 +218,6 @@ public class Login extends Activity implements View.OnClickListener, TextWatcher
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
     }
 
-    @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
         int l = s.length();
         if (l != 0) {
@@ -178,16 +225,15 @@ public class Login extends Activity implements View.OnClickListener, TextWatcher
             if (c == '0' && l == 11) {
                 my_num = e_my_num.getText().toString();
                 try {
-                    my_circle = db.eval(my_num, "Circle");
+                    //my_circle = db.eval(my_num, "Circle");
                     my_operator = db.eval(my_num, "Operator");
-                    if (my_circle == " " || my_operator == " ") {
+                    if (my_operator == " ") {
                         Toast.makeText(getBaseContext(), "Enter a valid number", Toast.LENGTH_LONG).show();
                     }
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
                 try {
-
                     Spinner dropdown = (Spinner) findViewById(R.id.operator_list);
                     operators = db.getDropDowndata("Operator");
                     operators[operators.length - 1] = my_operator;
@@ -202,15 +248,24 @@ public class Login extends Activity implements View.OnClickListener, TextWatcher
             } else if (c != '0' && l == 10) {
                 my_num = e_my_num.getText().toString();
                 try {
-                    my_circle = db.eval(my_num, "Circle");
+                    //my_circle = db.eval(my_num, "Circle");
                     my_operator = db.eval(my_num, "Operator");
-                    if (my_circle == " " || my_operator == " ") {
+                    if (my_operator == " ") {
                         Toast.makeText(getBaseContext(), "Enter a valid number", Toast.LENGTH_LONG).show();
                     }
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
                 try {
+//                    dropdown = (Spinner)findViewById(R.id.circle_list);
+//                    circles = db.getDropDowndata("Circle");
+//                    circles[circles.length - 1] = my_circle;
+//                    String temp = circles[circles.length - 1];
+//                    circles[circles.length - 1] = circles[0];
+//                    circles[0] = temp;
+//                    adapter1 = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, circles);
+//                    dropdown.setAdapter(adapter1);
+
                     Spinner dropdown = (Spinner) findViewById(R.id.operator_list);
                     operators = db.getDropDowndata("Operator");
                     operators[operators.length - 1] = my_operator;
@@ -231,3 +286,5 @@ public class Login extends Activity implements View.OnClickListener, TextWatcher
     }
 
 }
+
+

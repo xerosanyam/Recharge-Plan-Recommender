@@ -1,7 +1,4 @@
-package com.example.sanyam.myapplication; /**
- * Created by DELL on 31-03-2015.
- */
-
+package com.example.sanyam.myapplication;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -11,6 +8,11 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.sql.SQLException;
+
+/**
+ * Created by DELL on 31-03-2015.
+ */
+
 
 public class MySQLiteHelper extends SQLiteOpenHelper {
     // Database Version
