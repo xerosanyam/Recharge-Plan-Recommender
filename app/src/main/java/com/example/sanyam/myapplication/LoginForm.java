@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
 
+import com.example.sanyam.myapplication.Model.User;
 import com.firebase.client.Firebase;
 
 import butterknife.Bind;

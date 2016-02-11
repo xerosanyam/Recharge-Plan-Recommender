@@ -1,4 +1,4 @@
-package com.example.sanyam.myapplication;
+package com.example.sanyam.myapplication.Model;
 
 /**
  * Created by Sanyam Jain & Anisha Lunawat on 10/2/16.

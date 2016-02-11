@@ -12,7 +12,7 @@ import android.os.SystemClock;
  */
 //receiver of intent & requests to start alarm
 public class AlarmManagerBroadcastReceiver extends BroadcastReceiver {
-    private static final int PERIOD = 30 * 1000;
+    private static final int PERIOD = 600 * 1000;
 
     public static void setAlarm(Context context) {
         //when alarm goes off this intent is broadcasted by the system

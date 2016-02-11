@@ -1,4 +1,4 @@
-package com.example.sanyam.myapplication;
+package com.example.sanyam.myapplication.Model;
 
 import java.util.Date;
 
@@ -7,17 +7,17 @@ import java.util.Date;
  */
 
 //Database class
-public class DataUsage {
+public class Data {
     private long txWifiBytes;
     private long rxWifiBytes;
     private long txCellBytes;
     private long rxCellBytes;
     private Date date;
 
-    public DataUsage() {
+    public Data() {
     }
 
-    public DataUsage(long txWifiBytes, long rxWifiBytes, long txCellBytes, long rxCellBytes, Date date) {
+    public Data(long txWifiBytes, long rxWifiBytes, long txCellBytes, long rxCellBytes, Date date) {
         this.txWifiBytes = txWifiBytes;
         this.rxWifiBytes = rxWifiBytes;
         this.txCellBytes = txCellBytes;

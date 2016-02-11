@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.example.sanyam.myapplication.Model.Data;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -75,7 +77,7 @@ public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public void addDataUsage(DataUsage dataUsage) {
+    public void addDataUsage(Data dataUsage) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(KEY_TXWIFIBYTES, dataUsage.getTxWifiBytes());
@@ -87,14 +89,14 @@ public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
         db.close();
     }
 
-    public List<DataUsage> getUsageList() {
-        List<DataUsage> usageList = new ArrayList<>();
+    public List<Data> getUsageList() {
+        List<Data> usageList = new ArrayList<>();
         String selectQuery = "SELECT * FROM " + TABLE_DATA;
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
         if (cursor.moveToFirst()) {
             do {
-                DataUsage usage = new DataUsage();
+                Data usage = new Data();
                 usage.setTxWifiBytes(cursor.getInt(1));
                 usage.setRxWifiBytes(cursor.getInt(2));
                 usage.setTxCellBytes(cursor.getInt(3));
@@ -109,8 +111,7 @@ public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
     public Cursor getDataCursor() {
         String selectQuery = "SELECT * FROM " + TABLE_DATA;
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
-        return cursor;
+        return db.rawQuery(selectQuery, null);
     }
 
     public int getRecordsCount() {

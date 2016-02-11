@@ -13,8 +13,9 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
+
+import com.example.sanyam.myapplication.Model.Data;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,14 +36,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String MY_PREFS = "MyPrefs";
-    public static int logout = 0;
-    ED send = new ED();
     String my_num, my_operator;
-    SharedPreferences sharedPref;
-    SharedPreferences.Editor editor1;
-    @Bind(R.id.btnLogout)
-    Button btnLogout;
     @Bind(R.id.listView_usage)
     ListView mListView;
     private List<String> feedList = null;
@@ -92,11 +86,11 @@ public class MainActivity extends AppCompatActivity {
     private List<String> fetchData() {
         DataUsageDatabaseHandler db = new DataUsageDatabaseHandler(this);
         Log.e("Reading from DB :", "Reading all usage");
-        List<DataUsage> usages = db.getUsageList();
+        List<Data> usages = db.getUsageList();
 
         //Put fetched data from sql in a list
         List<String> usageArray = new ArrayList<>();
-        for (DataUsage du : usages) {
+        for (Data du : usages) {
             long newtxWifiBytes = du.getTxWifiBytes();
             long newrxWifiBytes = du.getRxWifiBytes();
             long newtxCellBytes = du.getTxCellBytes();

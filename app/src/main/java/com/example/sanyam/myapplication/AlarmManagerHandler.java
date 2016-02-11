@@ -8,18 +8,23 @@ import android.net.TrafficStats;
 import android.os.PowerManager;
 import android.util.Log;
 
+import com.example.sanyam.myapplication.Model.Data;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
  * Created by Sanyam Jain & Anisha Lunawat on 8/11/15.
  */
-//handle async request on demand (basically does some work on new thread)
+//Called when alarm goes off
+// Handle async request on demand (basically does some work on new thread)
+
 public class AlarmManagerHandler extends IntentService {
-    static long txWifiBytes, rxWifiBytes, txCellBytes, rxCellBytes;
-    static Context context;
+    long txWifiBytes, rxWifiBytes, txCellBytes, rxCellBytes;
     long newtxWifiBytes, newrxWifiBytes, newtxCellBytes, newrxCellBytes;
-    String date, time;
+    String date;
+
+    Context context;
 
     public AlarmManagerHandler() {
         super("ScheduledService");
@@ -27,7 +32,7 @@ public class AlarmManagerHandler extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Log.d(getClass().getSimpleName(), "Alarm went off &  I ran!");
+        Log.d(getClass().getSimpleName(), "Traffic Stats Api Called!");
         context = getApplicationContext();
 
         //Retrieving Shared preferences
@@ -45,26 +50,22 @@ public class AlarmManagerHandler extends IntentService {
         //Do not acquire WakeLock unless you really need them, use the minimum levels
         //possible, and be sure to release them as soon as possible.
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "writing data to sql");
+        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Getting Wake Lock");
 
         //Acquire the lock
         wl.acquire();
 
         newtxWifiBytes = (TrafficStats.getTotalTxBytes() - TrafficStats.getMobileTxBytes()) - txWifiBytes;
         txWifiBytes = TrafficStats.getTotalTxBytes() - TrafficStats.getMobileTxBytes();
-//        Log.e("my tx wifi:", String.valueOf(txWifiBytes));
 
         newrxWifiBytes = (TrafficStats.getTotalRxBytes() - TrafficStats.getMobileRxBytes()) - rxWifiBytes;
         rxWifiBytes = TrafficStats.getTotalRxBytes() - TrafficStats.getMobileRxBytes();
-//        Log.e("my rx wifi:", String.valueOf(rxWifiBytes));
 
         newtxCellBytes = (TrafficStats.getMobileTxBytes()) - txCellBytes;
         txCellBytes = (TrafficStats.getMobileTxBytes());
-//        Log.e("my tx cell:", String.valueOf(txCellBytes));
 
         newrxCellBytes = (TrafficStats.getMobileRxBytes()) - rxCellBytes;
         rxCellBytes = (TrafficStats.getMobileRxBytes());
-//        Log.e("my rx cell:", String.valueOf(rxCellBytes));
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         Date DATE = new Date();
@@ -74,12 +75,12 @@ public class AlarmManagerHandler extends IntentService {
         Log.d("txCellBytes", String.valueOf(newtxCellBytes));
         Log.d("rxCellBytes", String.valueOf(newrxCellBytes));
         Log.d("date", date);
-        DataUsageDatabaseHandler db = new DataUsageDatabaseHandler(context);
-        Log.d("Insert: ", "Inserting ..");
-        db.addDataUsage(new DataUsage(newtxWifiBytes, newrxWifiBytes, newtxCellBytes, newrxCellBytes, DATE));
-        Log.d("Inserted: ", "Inserting complete..");
 
+        DataUsageDatabaseHandler db = new DataUsageDatabaseHandler(context);
+        Log.d("Inserting: ", "Using Data Usage Database Handler");
+        db.addDataUsage(new Data(newtxWifiBytes, newrxWifiBytes, newtxCellBytes, newrxCellBytes, DATE));
         db.close();
+        Log.d("Inserted: ", "Inserting in SQL complete!");
 
         SharedPreferences.Editor editor = settings.edit();
         editor.putLong("txWifiBytes", txWifiBytes);
@@ -89,6 +90,6 @@ public class AlarmManagerHandler extends IntentService {
         editor.commit();
         editor.clear();
         wl.release();
-        Log.d(getClass().getSimpleName(), "I rannn!");
+        Log.d(getClass().getSimpleName(), "I ran!");
     }
 }
