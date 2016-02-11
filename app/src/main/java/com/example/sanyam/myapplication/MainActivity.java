@@ -31,16 +31,20 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 public class MainActivity extends AppCompatActivity {
     public static final String MY_PREFS = "MyPrefs";
     public static int logout = 0;
     ED send = new ED();
-    ListView mListView;
     String my_num, my_operator;
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor1;
-    Intent i = null;
+    @Bind(R.id.btnLogout)
     Button btnLogout;
+    @Bind(R.id.listView_usage)
+    ListView mListView;
     private List<String> feedList = null;
     private SwipeRefreshLayout mSwipeRefreshLayout = null;
 
@@ -49,13 +53,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         AlarmManagerBroadcastReceiver.setAlarm(this);
-        Bundle b = getIntent().getExtras();
-        sharedPref = getSharedPreferences(MY_PREFS, MODE_PRIVATE);
-        my_num = b.getString("my_num");
-        //period=b.getInt("period");
-        my_operator = b.getString("my_operator");
-        btnLogout = (Button) findViewById(R.id.btnLogout);
-        //populating listview on first run
+        ButterKnife.bind(this);
+
+        my_num = "8951262709";
+        my_operator = "Airtel";
+
         feedList = fetchData();
         ArrayAdapter<String> usageAdapter = new ArrayAdapter<>(
                 getApplicationContext(),
@@ -63,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
                 R.id.listView_textView,
                 feedList
         );
-        mListView = (ListView) findViewById(R.id.listView_usage);
+
         mListView.setAdapter(usageAdapter);
 
         //setting up refresh layout
@@ -78,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
     //puts value in listView for display
     private void updateList() {
-        ArrayAdapter mAdapter = new ArrayAdapter(MainActivity.this, R.layout.listitemusage, feedList);
+        ArrayAdapter<String> mAdapter = new ArrayAdapter<>(MainActivity.this, R.layout.listitemusage, feedList);
         mListView.setAdapter(mAdapter);
 
         if (mSwipeRefreshLayout.isRefreshing()) {
@@ -136,14 +138,14 @@ public class MainActivity extends AppCompatActivity {
             do {
                 data = new JSONObject();
                 Log.e("id in SQL", String.valueOf(cursor.getLong(0)));
-                Log.e("txwifi in SQL", String.valueOf(cursor.getLong(1)));
-                Log.e("rxwifi in SQL", String.valueOf(cursor.getLong(2)));
-                Log.e("txCell in SQL", String.valueOf(cursor.getLong(3)));
-                Log.e("rxCell in SQL", String.valueOf(cursor.getLong(4)));
-                data.put("txwifi", cursor.getLong(1));
-                data.put("rxwifi", cursor.getLong(2));
-                data.put("txcell", cursor.getLong(3));
-                data.put("rxcell", cursor.getLong(4));
+                Log.e("txwifi in SQL", String.valueOf(cursor.getLong(1) / 1024));
+                Log.e("rxwifi in SQL", String.valueOf(cursor.getLong(2) / 1024));
+                Log.e("txCell in SQL", String.valueOf(cursor.getLong(3) / 1024));
+                Log.e("rxCell in SQL", String.valueOf(cursor.getLong(4) / 1024));
+                data.put("txwifi", cursor.getLong(1) / 1024);
+                data.put("rxwifi", cursor.getLong(2) / 1024);
+                data.put("txcell", cursor.getLong(3) / 1024);
+                data.put("rxcell", cursor.getLong(4) / 1024);
                 data.put("date", DataUsageDatabaseHandler.toDate(cursor.getString(5)));
                 dataArray.put(data);
 //                    data.remove("txwifi");data.remove("rxwifi");data.remove("txcell");data.remove("rxcell");data.remove("date");
@@ -179,31 +181,16 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void onLogout(View view) {
-        logout = 1;
-        Log.e("logout", String.valueOf(logout));
-        SharedPreferences settings = getSharedPreferences(Login.MY_PREFS_NAME, MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("LoggedIn?", 0);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear();
         editor.commit();
-        Log.e("logout", "logout1");
-        setLoginState(0);
-        editor1 = getSharedPreferences(MY_PREFS, MODE_PRIVATE).edit();
-        editor1.remove("plans");
-        editor1.commit();
-        Log.e("logout", "logout2");
+        Log.e("Logging Out", "Logged Out");
         // Log.d(TAG, "Now log out and start the activity login");
-        i = new Intent(MainActivity.this, Login.class);
+        Intent i = new Intent(MainActivity.this, LoginForm.class);
         i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(i);
         finish();
-    }
-
-    private void setLoginState(int status) {
-        SharedPreferences sp = getSharedPreferences("data",
-                MODE_PRIVATE);
-        SharedPreferences.Editor ed = sp.edit();
-        ed.putInt("isLogged", status);
-        ed.commit();
     }
 
     //to print long json to log
@@ -260,17 +247,19 @@ public class MainActivity extends AppCompatActivity {
                 URL url;
                 String response;
                 try {
-                    url = new URL("http://192.168.14.125:8888/sync_data");
+                    url = new URL("http://172.16.81.199:8888/sync_data");
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setReadTimeout(15000);
                     conn.setConnectTimeout(15000);
                     conn.setRequestMethod("POST");
                     conn.setDoOutput(true);
                     conn.setDoInput(true);
+                    conn.setRequestProperty("Content-Type", "text/plain; charset=utf-8");
                     OutputStream outputStream = conn.getOutputStream();
                     String encrypt = ED.encrypt(json[0], "qazxswedc");
                     outputStream.write(encrypt.getBytes("UTF-8"));
-                    outputStream.write(json[0].getBytes("UTF-8"));
+                    Log.e("json", json[0]);
+                    //outputStream.write(json[0].getBytes("UTF-8"));
                     Log.e("Sent data to server", "sent");
                     outputStream.flush();
                     outputStream.close();

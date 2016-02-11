@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Data Usage</string>
+    <string name="app_name">Data Usage Monitor</string>
     <string name="phone">PHONE</string>
     <string name="login">LOGIN</string>
 </resources>
