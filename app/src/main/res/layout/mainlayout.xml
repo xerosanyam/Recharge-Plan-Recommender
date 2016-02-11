@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/wifi_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:padding="8dp"
+            android:text="Data Usage Monitor"
+            android:textSize="30sp" />
+
+        <TextView
+            android:id="@+id/age_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/wifi_view"
+            android:padding="16dp"
+            android:text="Age" />
+
+        <TextView
+            android:id="@+id/gender_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/age_view"
+            android:padding="16dp"
+            android:text="Gender" />
+
+        <TextView
+            android:id="@+id/city_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/gender_view"
+            android:padding="16dp"
+            android:text="City Of Residence" />
+
+        <TextView
+            android:id="@+id/monthly_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/city_view"
+            android:padding="16dp"
+            android:text="Monthly Income" />
+
+        <EditText
+            android:id="@+id/monthlyText"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_alignEnd="@+id/wifi_view"
+            android:layout_alignRight="@+id/wifi_view"
+            android:layout_below="@+id/city_view"
+            android:layout_toRightOf="@+id/city_view"
+            android:inputType="number"
+            android:maxLength="6"
+            android:paddingLeft="32dp" />
+
+        <TextView
+            android:id="@+id/landline_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/monthly_view"
+            android:padding="16dp"
+            android:text="Landline Data Subscription Plan" />
+
+        <TextView
+            android:id="@+id/rs_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/city_view"
+            android:layout_toRightOf="@id/monthlyText"
+            android:paddingTop="18dp"
+            android:text="Rs"
+            android:textSize="13dp" />
+
+        <TextView
+            android:id="@+id/gb1_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/monthlyText"
+            android:layout_toRightOf="@+id/landlineText"
+            android:paddingTop="28dp"
+            android:text="GB"
+            android:textSize="13dp" />
+
+        <TextView
+            android:id="@+id/mobile_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/landline_view"
+            android:padding="16dp"
+            android:text="Mobile Data Subscription Plan" />
+
+        <TextView
+            android:id="@+id/gb2_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/landlineText"
+            android:layout_toRightOf="@+id/mobileText"
+            android:paddingTop="28dp"
+            android:text="GB"
+            android:textSize="13dp" />
+
+
+        <EditText
+            android:id="@+id/ageText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="false"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/wifi_view"
+            android:layout_toEndOf="@+id/city_view"
+            android:layout_toRightOf="@+id/city_view"
+            android:inputType="number"
+            android:maxLength="2" />
+
+        <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/radioGroup"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/city_view"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@+id/gender_view"
+            android:layout_toEndOf="@+id/city_view"
+            android:layout_toRightOf="@+id/city_view"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radioButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Male" />
+
+            <RadioButton
+                android:id="@+id/radioButton2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Female" />
+        </RadioGroup>
+
+        <EditText
+            android:id="@+id/cityText"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@+id/city_view"
+            android:layout_toEndOf="@+id/city_view"
+            android:layout_toRightOf="@+id/city_view"
+            android:inputType="textAutoCorrect|textCapWords"
+            android:maxLength="20"
+            android:paddingLeft="32dp" />
+
+        <EditText
+            android:id="@+id/landlineText"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_alignEnd="@+id/wifi_view"
+            android:layout_alignRight="@+id/wifi_view"
+            android:layout_below="@+id/monthly_view"
+            android:layout_toRightOf="@+id/landline_view"
+            android:inputType="number"
+            android:maxLength="3" />
+
+        <EditText
+            android:id="@+id/mobileText"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_alignEnd="@+id/landlineText"
+            android:layout_alignRight="@+id/landlineText"
+            android:layout_below="@+id/landline_view"
+            android:layout_toRightOf="@+id/landline_view"
+            android:inputType="number"
+            android:maxLength="3" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/mobileText"
+            android:layout_centerInParent="true"
+            android:layout_marginTop="32dp"
+            android:onClick="sendToServer"
+            android:text="Submit" />
+    </RelativeLayout>
+</ScrollView>
