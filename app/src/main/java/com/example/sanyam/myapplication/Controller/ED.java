@@ -1,4 +1,4 @@
-package com.example.sanyam.myapplication;
+package com.example.sanyam.myapplication.Controller;
 
 /**
  * Created by Sanyam Jain &  Anisha Lunawat on 8/11/15.

@@ -2,4 +2,5 @@
     <string name="app_name">Data Usage Monitor</string>
     <string name="phone">PHONE</string>
     <string name="login">LOGIN</string>
+    <string name="FirebaseURL">https://dua-data.firebaseio.com/</string>
 </resources>

@@ -24,21 +24,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerInParent="true">
-
-        <Button
-            android:id="@+id/refresh"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="refreshList"
-            android:text="Refresh" />
-
-        <Button
-            android:id="@+id/submit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onSubmit"
-            android:text="Submit" />
-
         <Button
             android:id="@+id/btnLogout"
             android:layout_width="wrap_content"

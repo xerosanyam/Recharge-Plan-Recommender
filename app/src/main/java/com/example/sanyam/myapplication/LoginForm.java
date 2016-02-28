@@ -1,11 +1,14 @@
 package com.example.sanyam.myapplication;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 
 import com.example.sanyam.myapplication.Model.User;
 import com.firebase.client.Firebase;
@@ -16,6 +19,8 @@ import butterknife.ButterKnife;
 public class LoginForm extends AppCompatActivity {
     @Bind(R.id.ageText)
     EditText age;
+    @Bind(R.id.radioGroup)
+    RadioGroup gender;
     @Bind(R.id.cityText)
     EditText city;
     @Bind(R.id.monthlyText)
@@ -34,7 +39,7 @@ public class LoginForm extends AppCompatActivity {
         setContentView(R.layout.mainlayout);
         ButterKnife.bind(this);
         myFirebaseRef = new Firebase
-                ("https://samplefirebase-iiitb.firebaseio.com/");
+                ("https://dau-data.firebaseio.com/");
         myFirebaseRef.keepSynced(true);                                             //Send data to user after app restarts
     }
 
@@ -69,12 +74,34 @@ public class LoginForm extends AppCompatActivity {
         } else {
             User u = new User();
             u.setAge(Integer.parseInt(age.getText().toString()));
-            u.setGender('M');
+            if (gender.getCheckedRadioButtonId() == R.id.male) {
+                u.setGender('M');
+            } else {
+                u.setGender('F');
+            }
+
             u.setCity(city.getText().toString());
             u.setIncome(Integer.parseInt(income.getText().toString()));
             u.setLandline(Integer.parseInt(landline.getText().toString()));
             u.setMobile(Integer.parseInt(mobile.getText().toString()));
-            myFirebaseRef.child("121212567483").setValue(u);
+
+            TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+            String imei = telephonyManager.getDeviceId();
+
+//            AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
+//            Account[] list = manager.getAccounts();
+//            String gmail = "TEST";
+//
+//            for(Account account: list)
+//            {
+//                if(account.type.equalsIgnoreCase("com.google"))
+//                {
+//                    gmail = account.name;
+//                    break;
+//                }
+//            }
+//            gmail=gmail.replace("@gmail.com","").replace(".","").replace("#","").replace("$","").replace("[","").replace("]","");
+            myFirebaseRef.child(imei).child("Info").setValue(u);
 
             SharedPreferences.Editor editor = preferences.edit();             //Log in User
             editor.putInt("LoggedIn?", 1);

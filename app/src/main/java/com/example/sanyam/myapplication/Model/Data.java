@@ -1,7 +1,5 @@
 package com.example.sanyam.myapplication.Model;
 
-import java.util.Date;
-
 /**
  * Created by Sanyam Jain & Anisha Lunawat on 5/11/15.
  */
@@ -12,12 +10,12 @@ public class Data {
     private long rxWifiBytes;
     private long txCellBytes;
     private long rxCellBytes;
-    private Date date;
+    private String date;
 
     public Data() {
     }
 
-    public Data(long txWifiBytes, long rxWifiBytes, long txCellBytes, long rxCellBytes, Date date) {
+    public Data(long txWifiBytes, long rxWifiBytes, long txCellBytes, long rxCellBytes, String date) {
         this.txWifiBytes = txWifiBytes;
         this.rxWifiBytes = rxWifiBytes;
         this.txCellBytes = txCellBytes;
@@ -57,11 +55,11 @@ public class Data {
         this.rxCellBytes = rxCellBytes;
     }
 
-    public Date getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(String date) {
         this.date = date;
     }
 }

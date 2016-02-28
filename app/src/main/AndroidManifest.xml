@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.sanyam.myapplication"
-    >
+    package="com.example.sanyam.myapplication">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />   <!--Required by Receiver-->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.INTERNET" />              <!--Access Internet-->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />      <!--Getting IMEI Num-->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />             <!--Syncing in Background-->
 
     <application
         android:name=".MyApplication"
@@ -14,28 +14,31 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
 
         <activity
             android:name=".LoginForm"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <activity android:name=".MainActivity" />
-        <receiver android:name=".AlarmManagerBroadcastReceiver">
+
+        <service android:name=".Services.TrafficService" />
+        <service android:name=".Services.VMUploadService" />
+
+        <receiver android:name=".Receivers.NetworkUpdate">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
 
-        <service android:name=".AlarmManagerHandler" />
-
-
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="9f7e6ffe4a51e7d78c85db434ec6e3cc34ac94ec" />
     </application>
 
 </manifest>

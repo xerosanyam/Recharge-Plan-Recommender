@@ -1,4 +1,4 @@
-package com.example.sanyam.myapplication;
+package com.example.sanyam.myapplication.Controller;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -17,9 +17,9 @@ import java.util.List;
 /**
  * Created by Sanyam Jain & Anisha Lunawat on 5/11/15.
  */
-public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
+public class DatabaseHandler extends SQLiteOpenHelper {
 
-    public static final int DB_VERSION = 13;                             //DB Version
+    public static final int DB_VERSION = 1;                             //DB Version
     public static final String DB_NAME = "UsageDB";                     //DB Name
     public static final String TABLE_DATA = "data";                     //Table Name
     public static final String KEY_ID = "id";                           //Column Name
@@ -29,9 +29,12 @@ public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
     public static final String KEY_RXCELLBYTES = "rxCellBytes";         //Column Name
     public static final String KEY_DATE = "date";                       //Column Name
 
-    public DataUsageDatabaseHandler(Context context) {
+    SQLiteDatabase db = null;
+
+    public DatabaseHandler(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
     }
+
 
     public static String toDate(String str) {
         SimpleDateFormat s = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
@@ -78,52 +81,69 @@ public class DataUsageDatabaseHandler extends SQLiteOpenHelper {
     }
 
     public void addDataUsage(Data dataUsage) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(KEY_TXWIFIBYTES, dataUsage.getTxWifiBytes());
-        values.put(KEY_RXWIFIBYTES, dataUsage.getRxWifiBytes());
-        values.put(KEY_TXCELLBYTES, dataUsage.getTxCellBytes());
-        values.put(KEY_RXCELLBYTES, dataUsage.getRxCellBytes());
-        values.put(KEY_DATE, String.valueOf(dataUsage.getDate()));
-        db.insert(TABLE_DATA, null, values);
-        db.close();
+        try {
+            db = this.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put(KEY_TXWIFIBYTES, dataUsage.getTxWifiBytes());
+            values.put(KEY_RXWIFIBYTES, dataUsage.getRxWifiBytes());
+            values.put(KEY_TXCELLBYTES, dataUsage.getTxCellBytes());
+            values.put(KEY_RXCELLBYTES, dataUsage.getRxCellBytes());
+            values.put(KEY_DATE, dataUsage.getDate());
+            db.insert(TABLE_DATA, null, values);
+        } finally {
+            if (db != null)
+                db.close();
+        }
     }
 
     public List<Data> getUsageList() {
         List<Data> usageList = new ArrayList<>();
         String selectQuery = "SELECT * FROM " + TABLE_DATA;
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
-        if (cursor.moveToFirst()) {
-            do {
-                Data usage = new Data();
-                usage.setTxWifiBytes(cursor.getInt(1));
-                usage.setRxWifiBytes(cursor.getInt(2));
-                usage.setTxCellBytes(cursor.getInt(3));
-                usage.setRxCellBytes(cursor.getInt(4));
-                usage.setDate(strToDate(cursor.getString(5)));
-                usageList.add(usage);
-            } while (cursor.moveToNext());
+        try {
+            db = this.getWritableDatabase();
+            Cursor cursor = db.rawQuery(selectQuery, null);
+            if (cursor.moveToFirst()) {
+                do {
+                    Data usage = new Data();
+                    usage.setTxWifiBytes(cursor.getInt(1));
+                    usage.setRxWifiBytes(cursor.getInt(2));
+                    usage.setTxCellBytes(cursor.getInt(3));
+                    usage.setRxCellBytes(cursor.getInt(4));
+                    usage.setDate(cursor.getString(5));
+                    usageList.add(usage);
+                } while (cursor.moveToNext());
+            }
+        } finally {
+            db.close();
         }
         return usageList;
     }
 
     public Cursor getDataCursor() {
         String selectQuery = "SELECT * FROM " + TABLE_DATA;
-        SQLiteDatabase db = this.getWritableDatabase();
+        db = this.getWritableDatabase();
         return db.rawQuery(selectQuery, null);
     }
 
     public int getRecordsCount() {
         String countQuery = "SELECT * FROM " + TABLE_DATA;
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(countQuery, null);
-        cursor.close();
+        Cursor cursor = null;
+        try {
+            db = this.getReadableDatabase();
+            cursor = db.rawQuery(countQuery, null);
+        } finally {
+            db.close();
+        }
         return cursor.getCount();
     }
 
     public void deleteRecords() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_DATA, null, null);
+        try {
+            db = this.getWritableDatabase();
+            db.delete(TABLE_DATA, null, null);
+        } finally {
+            if (db != null)
+                db.close();
+        }
     }
 }

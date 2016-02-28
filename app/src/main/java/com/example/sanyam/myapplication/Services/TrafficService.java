@@ -1,4 +1,4 @@
-package com.example.sanyam.myapplication;
+package com.example.sanyam.myapplication.Services;
 
 import android.app.IntentService;
 import android.content.Context;
@@ -8,6 +8,7 @@ import android.net.TrafficStats;
 import android.os.PowerManager;
 import android.util.Log;
 
+import com.example.sanyam.myapplication.Controller.DatabaseHandler;
 import com.example.sanyam.myapplication.Model.Data;
 
 import java.text.SimpleDateFormat;
@@ -19,14 +20,14 @@ import java.util.Date;
 //Called when alarm goes off
 // Handle async request on demand (basically does some work on new thread)
 
-public class AlarmManagerHandler extends IntentService {
+public class TrafficService extends IntentService {
     long txWifiBytes, rxWifiBytes, txCellBytes, rxCellBytes;
     long newtxWifiBytes, newrxWifiBytes, newtxCellBytes, newrxCellBytes;
     String date;
 
     Context context;
 
-    public AlarmManagerHandler() {
+    public TrafficService() {
         super("ScheduledService");
     }
 
@@ -76,9 +77,9 @@ public class AlarmManagerHandler extends IntentService {
         Log.d("rxCellBytes", String.valueOf(newrxCellBytes));
         Log.d("date", date);
 
-        DataUsageDatabaseHandler db = new DataUsageDatabaseHandler(context);
+        DatabaseHandler db = new DatabaseHandler(context);
         Log.d("Inserting: ", "Using Data Usage Database Handler");
-        db.addDataUsage(new Data(newtxWifiBytes, newrxWifiBytes, newtxCellBytes, newrxCellBytes, DATE));
+        db.addDataUsage(new Data(newtxWifiBytes, newrxWifiBytes, newtxCellBytes, newrxCellBytes, DATE.toString()));
         db.close();
         Log.d("Inserted: ", "Inserting in SQL complete!");
 
