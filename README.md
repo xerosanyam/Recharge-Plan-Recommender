@@ -1,4 +1,5 @@
-# DataUsage
+# Recharge Plan Recommender (Formerly - DataUsage)
+* Build user profile based on usage pattern & suggest best recharge plan for them
 * Application to curate Wifi & Cellular Data from an Android Phone  
 * Aim is to collect internet consumption data of users  and examine their usage pattern by plotting a graph between Internet Consumption(wifi and cellular) vs the Time of day(Morning, Evening, Night, etc)  
 
